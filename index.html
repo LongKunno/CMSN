@@ -1,69 +1,145 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="./main.css">
-    <!-- GOOGLE fONTS -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Protest+Riot&family=Rubik+Glitch+Pop&display=swap"
-        rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Protest+Revolution&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&family=Pacifico&family=Protest+Revolution&display=swap" rel="stylesheet">
-    <!--              -->
-    <title>Valentine Day</title>
+<meta charset="UTF-8">
+<title>Thiệp Trung Thu cho ABC</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body,html{height:100%;overflow:hidden;font-family:'Segoe UI',sans-serif;background:#0b1220;color:#fff}
+
+  /* nền trời đêm */
+  .sky{position:absolute;inset:0;background:radial-gradient(circle at 50% 20%,#1a1a3a 0%,#0b1220 100%);overflow:hidden}
+
+  /* mặt trăng */
+  .moon{position:absolute;top:10%;left:50%;width:160px;height:160px;margin-left:-80px;border-radius:50%;
+    background:radial-gradient(circle at 30% 30%,#fff 0%,#ffeeb5 60%,#d8b97c 100%);
+    box-shadow:0 0 60px 30px rgba(255,240,200,0.5);animation:pulse 6s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+
+  /* sao */
+  .star{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;opacity:.8;animation:twinkle 3s infinite}
+  @keyframes twinkle{0%,100%{opacity:.8}50%{opacity:.2}}
+
+  /* mây */
+  .cloud{position:absolute;top:20%;width:200px;height:80px;background:rgba(255,255,255,.2);border-radius:50px;
+    filter:blur(20px);animation:movecloud 60s linear infinite}
+  .cloud:before,.cloud:after{content:"";position:absolute;background:inherit;width:100%;height:100%;border-radius:inherit}
+  .cloud:before{top:-30px;left:40px}
+  .cloud:after{top:-20px;left:-40px}
+  @keyframes movecloud{0%{left:-250px}100%{left:110%}}
+
+  /* đèn lồng */
+  .lantern{position:absolute;width:80px;height:100px;background:#ff4d6d;border-radius:40px/50px;top:40%;left:20%;
+    box-shadow:0 0 20px #ff4d6d88;animation:swing 4s ease-in-out infinite;transform-origin:top center}
+  .lantern:before{content:"";position:absolute;top:-30px;left:50%;width:2px;height:30px;background:#aaa}
+  .lantern:after{content:"";position:absolute;bottom:-15px;left:50%;width:20px;height:20px;background:#ffcc00;border-radius:50%}
+  @keyframes swing{0%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}100%{transform:rotate(-5deg)}}
+
+  /* text chúc */
+  .greeting{position:absolute;bottom:10%;left:50%;transform:translateX(-50%);text-align:center;color:#fff;text-shadow:0 0 10px #fff}
+  .greeting h1{font-size:48px;color:#ffd27f;margin-bottom:20px}
+  .greeting p{font-size:20px;line-height:1.5;max-width:600px;margin:auto}
+
+  /* pháo hoa */
+  canvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}
+</style>
 </head>
-
 <body>
-    <div class="container">
-        <img class="paperHeart paperHeart1" style="--time: 0s" src="./img/paperHeart.webp" alt="">
-        <img class="paperHeart paperHeart2" style="--time: 1s" src="./img/paperHeart.webp" alt="">
-        <img class="paperHeart paperHeart3" style="--time: 2.5s" src="./img/paperHeart.webp" alt="">
-        <img class="paperHeart paperHeart4" style="--time: 4s" src="./img/paperHeart.webp" alt="">
-        <img class="paperHeart paperHeart5" style="--time: 2s" src="./img/paperHeart.webp" alt="">
-        <img class="paperHeart paperHeart6" style="--time: 3s" src="./img/paperHeart.webp" alt="">
+<div class="sky" id="sky">
+  <div class="moon"></div>
+  <div class="cloud" style="top:25%;animation-delay:0s"></div>
+  <div class="cloud" style="top:35%;animation-delay:15s"></div>
+  <div class="lantern" style="left:20%"></div>
+  <div class="lantern" style="left:75%;animation-delay:2s;background:#ff9933"></div>
+  <div class="greeting">
+    <h1>Trung Thu Vui Vẻ</h1>
+    <p>Gửi ABC,<br>
+    Chúc em Trung Thu ngập tràn niềm vui, hạnh phúc và yêu thương.<br>
+    Mong rằng ánh trăng đêm nay luôn soi sáng và mang đến những điều ngọt ngào nhất cho em.</p>
+  </div>
+  <canvas id="fireworks"></canvas>
+</div>
 
-        <div class="boxTitle">
-            <p class="firstTitle partTitle">Happy</p>
-            <p class="secondTitle partTitle">Valentine</p>
-        </div>
+<audio id="bgm" loop autoplay>
+  <source src="https://cdn.pixabay.com/audio/2021/10/29/audio_2e24b75f1c.mp3" type="audio/mpeg">
+</audio>
 
-        <div class="boxCloud">
-            <div class="cloud"></div>
-            <div class="cloud1"></div>
-            <div class="cloud2"></div>
+<script>
+/* tạo sao */
+const sky=document.getElementById('sky');
+for(let i=0;i<100;i++){
+  const s=document.createElement('div');
+  s.className='star';
+  s.style.top=Math.random()*100+'%';
+  s.style.left=Math.random()*100+'%';
+  s.style.animationDuration=(2+Math.random()*3)+'s';
+  sky.appendChild(s);
+}
 
-            <div class="btnBox">
-                <div class="cloudBtn"></div>
-                <button class="openBtn">Chạm vào đây đi</button>
-            </div>
-        </div>
+/* pháo hoa */
+const canvas=document.getElementById('fireworks');
+const ctx=canvas.getContext('2d');
+canvas.width=innerWidth;canvas.height=innerHeight;
+window.addEventListener('resize',()=>{canvas.width=innerWidth;canvas.height=innerHeight});
 
-        <div class="cardValentine">
-            <div class="left">
-                <div class="leftFront">
-                    <div class="boxShadow">
-                        <div class="boxTitleCard"></div>
-                    </div>
-
-                    <p class="des">Hãy chạm vào tấm thiệp</p>
-                </div>
-                <div class="leftBack">
-                    <img class="artHeart" src="./img/artHeart.webp" alt="">
-                </div>
-            </div>
-
-            <div class="right">
-                <div class="rightContent">
-                    <p class="letterContent"></p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="./main.js"></script>
+class Firework{
+  constructor(){this.reset()}
+  reset(){
+    this.x=Math.random()*canvas.width;
+    this.y=canvas.height;
+    this.targetY=Math.random()*canvas.height/2;
+    this.speed=3+Math.random()*3;
+    this.size=2;
+    this.color=`hsl(${Math.random()*360},100%,50%)`;
+    this.exploded=false;
+    this.particles=[];
+  }
+  update(){
+    if(!this.exploded){
+      this.y-=this.speed;
+      if(this.y<=this.targetY){this.explode()}
+    }
+    this.particles.forEach(p=>p.update());
+    this.particles=this.particles.filter(p=>p.life>0);
+  }
+  draw(){
+    if(!this.exploded){
+      ctx.beginPath();ctx.arc(this.x,this.y,this.size,0,Math.PI*2);ctx.fillStyle=this.color;ctx.fill();
+    }
+    this.particles.forEach(p=>p.draw());
+  }
+  explode(){
+    this.exploded=true;
+    for(let i=0;i<50;i++){this.particles.push(new Particle(this.x,this.y,this.color))}
+    setTimeout(()=>this.reset(),2000);
+  }
+}
+class Particle{
+  constructor(x,y,color){
+    this.x=x;this.y=y;this.color=color;
+    this.angle=Math.random()*2*Math.PI;
+    this.speed=Math.random()*4+2;
+    this.life=100;
+  }
+  update(){
+    this.x+=Math.cos(this.angle)*this.speed;
+    this.y+=Math.sin(this.angle)*this.speed+0.5;
+    this.speed*=0.98;
+    this.life--;
+  }
+  draw(){
+    ctx.globalAlpha=this.life/100;
+    ctx.beginPath();ctx.arc(this.x,this.y,2,0,Math.PI*2);ctx.fillStyle=this.color;ctx.fill();
+    ctx.globalAlpha=1;
+  }
+}
+let fireworks=[new Firework(),new Firework(),new Firework()];
+function animate(){
+  requestAnimationFrame(animate);
+  ctx.fillStyle="rgba(0,0,0,0.2)";ctx.fillRect(0,0,canvas.width,canvas.height);
+  fireworks.forEach(f=>{f.update();f.draw()});
+}
+animate();
+</script>
 </body>
-
 </html>
